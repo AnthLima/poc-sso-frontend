@@ -1,35 +1,75 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import axios, { AxiosResponse } from 'axios';
+import { useEffect, useState } from 'react';
+import GoogleButton from 'react-google-button';
 
-function App() {
-  const [count, setCount] = useState(0)
+const LoginPage = () => {
+  const handleRedirectToGoogleAuthApi = () => {
+    window.open("http://localhost:3000/auth/google");
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
+    <div className="container">
+      <h1>Login SSO</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        <GoogleButton onClick={handleRedirectToGoogleAuthApi} />
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
+};
+
+const SuccessPage = () => {
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response: AxiosResponse<any> = await axios.get('http://localhost:3000/protected/route', {
+          withCredentials: true,
+        });
+
+        if (response.data?.user) {
+          setUser(response.data.user);
+        }
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          console.error('Erro de autenticação:', error.response?.data || error.message);
+        } else {
+          console.error('Erro inesperado:', error);
+        }
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  return (
+    <div className="container">
+      <h1>Login com sucesso!</h1>
+      {user ? (
+        <div>
+          <h2>Informações do Usuário:</h2>
+          <p>Email: {user.email}</p>
+          <p>Nome: {user.firstName} {user.lastName}</p>
+          <img src={user.picture} alt="User Picture" />
+        </div>
+      ) : (
+        <p>Carregando informações do usuário...</p>
+      )}
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login/success" element={<SuccessPage />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;
