@@ -5,7 +5,7 @@ import GoogleButton from 'react-google-button';
 
 const LoginPage = () => {
   const handleRedirectToGoogleAuthApi = () => {
-    window.open("http://localhost:3000/auth/google");
+    window.location.href="http://localhost:3000/auth/google";
   };
 
   return (
