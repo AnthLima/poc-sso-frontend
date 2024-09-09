@@ -43,6 +43,24 @@ const SuccessPage = () => {
     checkAuth();
   }, []);
 
+  const clearCookie = () => {
+    document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post('http://localhost:3000/auth/logout', {}, { withCredentials: true });
+  
+      localStorage.removeItem('jwt');
+      sessionStorage.removeItem('jwt');
+      clearCookie();
+  
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    }
+  };
+
   return (
     <div className="container">
       <h1>Login com sucesso!</h1>
@@ -56,6 +74,9 @@ const SuccessPage = () => {
       ) : (
         <p>Carregando informações do usuário...</p>
       )}
+      <button onClick={handleLogout}>
+        Logout
+      </button>
     </div>
   );
 };
